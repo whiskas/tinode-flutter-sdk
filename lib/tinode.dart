@@ -335,8 +335,16 @@ class Tinode {
     return ctrl;
   }
 
+  /// Wrapper for `login` with basic authentication with secret
+  Future<CtrlMessage> loginBasicBySecret(String secret, Map<String, dynamic>? cred) async {
+    var username = utf8.decode(base64.decode(secret)).split(':')[0];
+    var ctrl = await login('basic', secret, cred);
+    _authService.setLastLogin(username);
+    return ctrl;
+  }
+
   /// Wrapper for `login` with token authentication
-  Future loginToken(String token, Map<String, dynamic>? cred) {
+  Future loginToken(String token, Map<String, dynamic> cred) {
     return login('token', token, cred);
   }
 
