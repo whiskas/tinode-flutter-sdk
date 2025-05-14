@@ -336,7 +336,7 @@ class Tinode {
   }
 
   /// Wrapper for `login` with token authentication
-  Future loginToken(String token, Map<String, dynamic> cred) {
+  Future loginToken(String token, Map<String, dynamic>? cred) {
     return login('token', token, cred);
   }
 
