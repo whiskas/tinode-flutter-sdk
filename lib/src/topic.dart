@@ -284,7 +284,8 @@ class Topic {
       _cacheManager.delete('topic', name ?? '');
       _gone();
     }
-    return CtrlMessage.fromMessage(ctrl);
+    // return CtrlMessage.fromMessage(ctrl);
+    return ctrl;
   }
 
   /// Request topic metadata from the serve
@@ -299,20 +300,30 @@ class Topic {
   /// `forward` if true, request newer messages.
   Future getMessagesPage(int limit, bool forward) {
     var query = startMetaQuery();
-    var future = getMeta(query.build());
 
-    if (forward) {
+    if(forward) {
       query.withLaterData(limit);
     } else {
       query.withEarlierData(limit);
-      future = future.then((response) {
-        var ctrl = CtrlMessage.fromMessage(response);
+    }
+
+    var future = getMeta(query.build());
+
+    if (!forward) {
+      future = future.then((ctrl) {
+        // var ctrl = CtrlMessage.fromMessage(response);
         if (ctrl.params != null && (ctrl.params['count'] == null || ctrl.params['count'] == 0)) {
           _noEarlierMsgs = true;
         }
       });
     }
 
+    // if (forward) {
+    //   query.withLaterData(limit);
+    // } else {
+    //   query.withEarlierData(limit);
+    // }
+    //
     return future;
   }
 
@@ -710,13 +721,8 @@ class Topic {
   /// Process data message
   void routeData(DataMessage data) {
     if (data.content != null) {
-      if (touched == null) {
-        touched=data.ts;
-      }
-      else{
-        if (touched!.isBefore(data.ts!)) {
-          touched = data.ts;
-        }
+      if (touched!.isBefore(data.ts!)) {
+        touched = data.ts;
       }
     }
 
@@ -1074,8 +1080,8 @@ class Topic {
 
       // Previous is not a gap. Create a new gap.
       prev = DataMessage(
-        seq: (data.hi! > 0 ? data.hi! : data.seq)! + 1,
-        hi: data.hi! > 0 ? data.hi : data.seq,
+        seq: ((prev.hi != null && prev.hi! > 0) ? prev.hi! : data.seq)! + 1,
+        hi: (prev.hi != null && prev.hi! > 0) ? prev.hi : data.seq,
       );
       ranges.add(prev);
     }, null, null);
@@ -1083,7 +1089,7 @@ class Topic {
     // Check for missing messages at the end.
     // All messages could be missing or it could be a new topic with no messages.
     var last = _messages.length > 0 ? _messages.getLast() : null;
-    var maxSeq = max(seq!, _maxSeq);
+    var maxSeq = max((seq ?? 0), _maxSeq);
     if ((maxSeq > 0 && last == null) || (last != null && (((last.hi != null && last.hi! > 0) ? last.hi : last.seq)! < maxSeq))) {
       if (last != null && (last.hi != null && last.hi! > 0)) {
         // Extend existing gap

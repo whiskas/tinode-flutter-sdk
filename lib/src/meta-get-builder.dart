@@ -52,12 +52,12 @@ class MetaGetBuilder {
       return this;
     }
 
-    return withData((topic.maxSeq > 0 ? topic.maxSeq + 1 : null)!, null, limit);
+    return withData((topic.maxSeq > 0 ? topic.maxSeq + 1 : 0), null, limit);
   }
 
   /// Add query parameters to fetch messages older than the earliest saved message
   MetaGetBuilder withEarlierData(int limit) {
-    return withData(null, (topic.minSeq > 0 ? topic.minSeq : null)!, limit);
+    return withData(null, (topic.minSeq > 0 ? topic.minSeq : 0), limit);
   }
 
   /// Add query parameters to fetch topic description if it's newer than the given timestamp

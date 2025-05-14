@@ -41,7 +41,6 @@ class CtrlMessage {
   final DateTime? ts;
 
   final dynamic params;
-
   CtrlMessage({
     this.id,
     this.topic,
